@@ -1,6 +1,11 @@
 ﻿<template>
     <div v-if="chartData" v-cloak>
-        <div style="position:relative;">
+        <div class="d-flex flex-row justify-content-between">
+            <div>
+                <h5 class="ml-2 mb-0 text-primary font-weight-bold">Age</h5>
+            </div>
+        </div>
+        <div style="position:relative;height:45vh;">
             <canvas :id="chartId"></canvas>
         </div>
     </div>
@@ -44,27 +49,47 @@
                 data.forEach(item => {
 
                     const age = item.attributes.edad;
-                    if (!isNaN(age) && !ages.includes(age)) {
+                    if (!isNaN(age) && age > 0 && !ages.includes(age)) {
                         ages.push(age)
                     }
                 });
 
                 ages.sort();
 
-
                 let datasets = [];
-                let ds = {
-                    label: "Ages",
-                    backgroundColor: ages.map(item => {
-                        return vm.getRandomColor();
-                    }),
+                let ds1 = {
+                    label: "Male",
+                    borderColor: `rgba(0,0,255,1)`,
+                    backgroundColor: `rgba(0,0,255,0.5)`,
                     data: Array(ages.length)
                 };
-                datasets.push(ds);
+                for (var i = 0; i < ds1.data.length; i++) {
+                    ds1.data[i] = 0;
+                }
+                datasets.push(ds1);
+
+
+                let ds2 = {
+                    label: "Female",
+                    borderColor: `rgba(200,0,0,1)`,
+                    backgroundColor: `rgba(200,0,0,0.5)`,
+                    data: Array(ages.length)
+                };
+                for (var i = 0; i < ds2.data.length; i++) {
+                    ds2.data[i] = 0;
+                }
+                datasets.push(ds2);
 
                 // process data;
                 data.forEach(item => {
                     //get the ds
+                    let ds = null;
+                    const gender = item.attributes.kasarian;
+
+                    if (gender.toLowerCase() == 'male')
+                        ds = ds1;
+                    else
+                        ds = ds2;
 
                     const age = item.attributes.edad;
 
@@ -79,40 +104,40 @@
                             ds.data[index]++;
                     }
                 });
-
                 let ctx = document.getElementById(vm.chartId);
-
-                let labels = ages;
 
                 if (vm.chart == null) {
 
                     vm.chart = new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: labels,
-                            datasets: datasets
+                        type: 'horizontalBar',
 
+                        data: {
+                            datasets: datasets,
+                            labels: ages
                         },
                         options: {
                             responsive: true,
-                            maintainAspectRatio: true,
-                            title: {
-                                display: true,
-                                text: 'Age'
+                            maintainAspectRatio: false,
+                            elements: {
+                                rectangle: {
+                                    borderWidth: 2
+                                }
                             },
                             legend: {
-                                display: false,
                                 position: 'right'
                             },
-                            animation: {
-                                animateScale: true,
-                                animateRotate: true,
+                            scales: {
+                                xAxes: [{
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }]
                             }
                         }
                     });
                 }
                 else {
-                    vm.chart.data.labels = labels;
+                    vm.chart.data.labels = ages;
                     vm.chart.data.datasets = datasets;
                     vm.chart.update();
                 }

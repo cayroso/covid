@@ -6,16 +6,16 @@ import Vue from 'vue';
 import VueChartJs from 'vue-chartjs'
 
 import App from './app.vue';
-import MomentVue from 'vue-moment';
+//import MomentVue from 'vue-moment';
 import { FormSelectPlugin, OverlayPlugin, CollapsePlugin, ModalPlugin  } from 'bootstrap-vue';
 
-Vue.use(MomentVue);
+//Vue.use(MomentVue);
 Vue.use(FormSelectPlugin);
 Vue.use(OverlayPlugin);
 Vue.use(CollapsePlugin);
 Vue.use(ModalPlugin);
 
-window.moment = require('moment');
+//window.moment = require('moment');
 
 Vue.component('line-chart', {
     extends: VueChartJs.Line,

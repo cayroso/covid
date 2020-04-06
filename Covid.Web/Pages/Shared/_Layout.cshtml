@@ -4,6 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Covid.Web</title>
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/fontawesome.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/solid.min.css" />
     <link rel="stylesheet" href="~/app/vendor-bundle.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/app/main.css" asp-append-version="true" />
 </head>
@@ -12,25 +16,16 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-xl">
                 <a class="navbar-brand" asp-area="" asp-page="/Index">Covid.Web&nbsp;<sub>caypotato@@gmail.com</sub></a>
-                @*<button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>*@
+
             </div>
         </nav>
     </header>
     <div id="app" class="container-xl">
-
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        @RenderBody()
     </div>
 
     <script src="~/app/vendor-bundle.js" asp-append-version="true"></script>
     <script src="~/app/main.js" asp-append-version="true"></script>
-
-    @RenderSection("Scripts", required: false)
-
 
 </body>
 </html>

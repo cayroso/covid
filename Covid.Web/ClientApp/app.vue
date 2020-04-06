@@ -4,7 +4,7 @@
             <div class="row flex-column-reverse flex-md-row">
                 <div class="col-md-8">
                     <div class="mr-auto">
-                        <div class="form-group align-self-end">
+                        <div class="form-group mb-0 align-self-end">
                             <label class="font-weight-bold text-primary">
                                 Selected Province(s)
                                 <span @click="selectedProvinces = []" class="px-1 rounded border border-danger text-danger">
@@ -12,7 +12,7 @@
                                 </span>
                             </label>
 
-                            <div class="d-flex align-content-start flex-wrap">
+                            <div class="d-flex align-content-center flex-wrap ">
                                 <span v-for="(p,index) in selectedProvinces" @click="removeProvince(index)" class="px-1 mr-1 mb-1 rounded border border-success" style="cursor: pointer">
                                     <span>
                                         {{p}}
@@ -51,18 +51,7 @@
                 </div>
             </div>
         </div>
-        <div class="card shadow-sm mt-2 p-1">
-            <b-overlay :show="busy">
-                <line-confirmed-per-day v-if="items" :chart-id="`c1`" :chart-data="items" :provinces="selectedProvinces"></line-confirmed-per-day>
-            </b-overlay>
-        </div>
-        <div class="card shadow-sm mt-2 p-1">
-            <b-overlay :show="busy">
-                <pie-age v-if="items" :chart-id="`c2`" :chart-data="items" :provinces="selectedProvinces"></pie-age>
-            </b-overlay>
-        </div>
-
-        <!--<div class="row mt-2">
+        <div class="row mt-2">
             <div class="col-lg-8">
                 <div class="card shadow-sm p-1">
                     <b-overlay :show="busy">
@@ -71,17 +60,19 @@
                 </div>
             </div>
             <div class="col-lg-4">
-                <div class="card shadow-sm p-1 mt-2 mt-lg-0">
+                <div class="card shadow-sm p-1 mt-lg-0 mt-2">
                     <b-overlay :show="busy">
                         <pie-age v-if="items" :chart-id="`c2`" :chart-data="items" :provinces="selectedProvinces"></pie-age>
                     </b-overlay>
                 </div>
             </div>
-        </div>-->
+        </div>
+
+
         <div class="card shadow mt-2">
             <div class="card-header d-flex flex-row justify-content-between">
                 <h6 class="font-weight-bold mb-0 text-primary"> Confirmed Cases</h6>
-                <h6 class="font-weight-bold mb-0 text-primary"> Total: {{items.length}}</h6>
+                <h6 class="font-weight-bold mb-0 text-primary"> Total: {{items.length}} <span v-if="items.length !== filteredItems.length">, Filtered: {{filteredItems.length}}</span></h6>
 
             </div><b-overlay :show="busy">
                 <div class="table-responsive mb-0">
@@ -89,26 +80,55 @@
                     <table class="table table-bordered table-sm">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>PH</th>
-                                <th>Age</th>
-                                <th>Nationality</th>
-                                <th>Residence</th>
-                                <th>Date Confirmed</th>
+                                <td class="text-center align-middle">#</td>
+                                <td>PH</td>
+                                <td>Age</td>
+                                <td>Nationality</td>
+                                <td>Residence</td>
+                                <td>Date Confirmed</td>
+                            </tr>
+                            <tr class="bg-secondary">
+                                <td class="text-center align-middle">
+                                    <button @click="resetFilter" class="btn btn-sm btn-primary">
+                                        Reset
+                                    </button>
+                                </td>
+                                <td>
+                                    <input v-model="filter.ph" type="text" class="form-control form-control-sm text-center" />
+                                </td>
+                                <td>
+                                    <!--<input v-model="filter.age" type="number" class="form-control form-control-sm" disabled />-->
+                                </td>
+                                <td>
+                                    <!--<input v-model="filter.nationality" type="text" class="form-control form-control-sm" disabled />-->
+                                </td>
+                                <td>
+                                    <input v-model="filter.residence" type="text" class="form-control form-control-sm text-center" />
+                                </td>
+                                <td>
+                                    <input v-model="filter.confirmed" type="text" class="form-control form-control-sm text-center" />
+                                </td>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(feat,index) in paginated">
-                                <td>{{((pageIndex-1)*pageSize) + (index+1)}}</td>
+                                <td class="text-center align-middle">{{((pageIndex-1)*pageSize) + (index+1)}}</td>
                                 <td>
                                     <span @click="viewPatient(feat.attributes)" class="text-primary" style="cursor:pointer">
                                         {{feat.attributes.PH_masterl}}
                                     </span>
                                 </td>
-                                <td>{{feat.attributes.edad}}</td>
+                                <td>
+                                    <div class="d-flex flex-row">
+                                        <div>
+                                            <span v-bind:class="{'fa-male': feat.attributes.kasarian == 'Male', 'fa-female': feat.attributes.kasarian == 'Female',  }" class="fas fa-fw"></span>
+                                        </div>
+                                        <div v-text="feat.attributes.edad"></div>
+                                    </div>
+                                </td>
                                 <td>{{feat.attributes.nationalit}}</td>
                                 <td>{{feat.attributes.residence}}</td>
-                                <td>{{feat.attributes.confirmed}}</td>
+                                <td class="text-right">{{feat.attributes.confirmed}}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -118,22 +138,29 @@
             <div class="card-footer">
                 <b-overlay :show="busy">
                     <div class="d-flex flex-row justify-content-between">
-                        <div>
+                        <div class="text-left align-middle d-flex flex-row">
                             <button @click="pageIndex = 1" class="btn btn-outline-primary">
                                 <span class="fas fa-fw fa-angle-double-left"></span>
                             </button>
-                            <button @click="movePrevious" class="btn btn-outline-primary">
+                            <button @click="movePrevious" class="btn btn-outline-primary ml-1">
                                 <span class="fas fa-fw fa-angle-left"></span>
                             </button>
                         </div>
-                        <div>
-                            <input v-model="pageIndex" type="number" class="col-3 text-center  form-control-sm" /> of {{totalPages}} Page(s)
+
+                        <div class="d-flex flex-row justify-content-center">
+                            <div>
+                                {{pageIndex}}/{{totalPages}} Page(s)
+                            </div>
+                            <!--<div class="d-flex flex-row ml-1">
+                                Per Page: <input v-model="pageSize" type="number" class="form-control form-control-sm col-3" />
+                            </div>-->
                         </div>
-                        <div>
+
+                        <div class="text-right align-middle d-flex flex-row">
                             <button @click="moveNext" class="btn btn-outline-primary">
                                 <span class="fas fa-fw fa-angle-right"></span>
                             </button>
-                            <button @click="pageIndex = totalPages" class="btn btn-outline-primary">
+                            <button @click="pageIndex = totalPages" class="btn btn-outline-primary ml-1">
                                 <span class="fas fa-fw fa-angle-double-right"></span>
                             </button>
                         </div>
@@ -256,40 +283,65 @@
         },
         data() {
             return {
+                baseArcgisUrl: 'https://services5.arcgis.com/mnYJ21GiFTR97WFg/arcgis/rest/services/PH_masterlist/FeatureServer/0/query?f=json&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&cacheHint=false',
+                resultRecordCount: 2000,
                 busy: false,
-                hasNextRows: false,
                 items: [],
                 selectedItem: null,
                 selectedProvince: '',
                 selectedProvinces: [],//, 'Cavite', 'Laguna'],//, 'Quezon City', 'San Juan City'],
                 provinces: [],
-                confirmedPerDay: {
-                    options: { responsive: true, maintainAspectRatio: false }
-                },
                 pageIndex: 1,
-                pageSize: 10,
+                pageSize: 15,
+                filter: {
+                    ph: '',
+                    age: null,
+                    nationality: '',
+                    residence: '',
+                    confirmed: ''
+                }
 
             }
         },
         computed: {
+
             filteredProvinces() {
                 const vm = this;
 
+
                 var filtered = vm.provinces.filter(item => {
-                    return !vm.selectedProvinces.includes(item); s
+                    return !vm.selectedProvinces.includes(item);
                 });
+
+                return filtered;
+
+            },
+            filteredItems() {
+                const vm = this;
+
+                var filtered = vm.items.filter(item => {
+
+                    var ph = item.attributes.PH_masterl.toLowerCase().includes(vm.filter.ph.toLowerCase());
+                    //var age = item.attributes.PH_masterl.toLowerCase().includes(vm.filter.age);
+                    var residence = item.attributes.residence.toLowerCase().includes(vm.filter.residence.toLowerCase());
+                    var confirmed = item.attributes.confirmed.toLowerCase().includes(vm.filter.confirmed);
+
+                    return ph && residence && confirmed;
+                });
+
                 return filtered;
             },
             paginated() {
                 const vm = this;
 
-                var page = vm.items.slice((vm.pageIndex - 1) * vm.pageSize, vm.pageIndex * vm.pageSize);
+                var page = vm.filteredItems.slice((vm.pageIndex - 1) * vm.pageSize, vm.pageIndex * vm.pageSize);
+
                 return page;
             },
             totalPages() {
                 const vm = this;
 
-                var total = Math.ceil(vm.items.length / vm.pageSize);
+                var total = Math.ceil(vm.filteredItems.length / vm.pageSize);
                 return total;
             }
         },
@@ -310,6 +362,17 @@
             await vm.get();
         },
         methods: {
+            resetFilter() {
+                const vm = this;
+
+                vm.filter = {
+                    ph: '',
+                    age: null,
+                    nationality: '',
+                    residence: '',
+                    confirmed: ''
+                }
+            },
             movePrevious() {
                 if (this.pageIndex > 1) {
                     this.pageIndex--;
@@ -322,19 +385,26 @@
 
             async getProvinces() {
                 const vm = this;
-                const loop = true;
-                const resultRecordCount = 200;
                 let hasNextRows = false;
                 let resultOffset = 0;
-                let url1 = `https://services5.arcgis.com/mnYJ21GiFTR97WFg/arcgis/rest/services/PH_masterlist/FeatureServer/0/query?f=json`;
 
                 let provinces = [];
 
                 do {
-                    let url2 = url1 + `&where=1=1&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=residence&cacheHint=false&resultOffset=${resultOffset}&resultRecordCount=${resultRecordCount}`;
+                    const where = encodeURIComponent('1=1');
+
+                    const query = [
+                        '&where=', where,
+                        '&outFields=', 'residence',
+                        '&resultOffset=', resultOffset,
+                        '&resultRecordCount=', vm.resultRecordCount,
+                    ].join('');
+
+
+                    let url = vm.baseArcgisUrl + query;
 
                     try {
-                        await instance.get(url2)
+                        await instance.get(url)
                             .then(resp => {
                                 const data = resp.data;
 
@@ -346,9 +416,9 @@
                         alert(e);
                     }
 
-                    resultOffset += resultRecordCount + 1;
+                    resultOffset += vm.resultRecordCount;
 
-                } while (loop && hasNextRows);
+                } while (hasNextRows);
 
                 vm.provinces = [];
 
@@ -365,11 +435,8 @@
             },
             async get() {
                 const vm = this;
-                const loop = true;
-                const resultRecordCount = 200;
                 let resultOffset = 0;
-                let url1 = `https://services5.arcgis.com/mnYJ21GiFTR97WFg/arcgis/rest/services/PH_masterlist/FeatureServer/0/query?f=json`;
-
+                let hasNextRows = false;
                 let items = [];
 
                 vm.items = [];
@@ -384,45 +451,44 @@
 
                 try {
                     vm.busy = true;
-
+                    vm.pageIndex = 1;
                     do {
                         let where = encodeURIComponent(`1=1`);
 
                         if (vm.selectedProvince.length > 0) {
                             where = '';
-                            vm.selectedProvinces.map((p, index) => {
-                                where += encodeURIComponent(`${index == 0 ? '' : 'OR'} residence LIKE '%${p}%' `);
+                            vm.selectedProvinces.forEach((p, index) => {
+                                where += encodeURIComponent(`${index == 0 ? '' : 'OR'} residence LIKE '%${p}' `);
                             });
-
                         }
-                        let fields = 'FID,PH_masterl,nationalit,residence,edad,confirmed';
-                        let url2 = url1 + `&where=${where}&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=${fields}&resultOffset=${resultOffset}&resultRecordCount=${resultRecordCount}`;
 
+                        const query = [
+                            '&where=', where,
+                            '&outFields=', 'FID,PH_masterl,kasarian,nationalit,residence,edad,confirmed',
+                            '&resultOffset=', resultOffset,
+                            '&resultRecordCount=', vm.resultRecordCount,
+                        ].join('');
 
-                        await instance.get(url2)
+                        let url = vm.baseArcgisUrl + query;
+
+                        await instance.get(url)
                             .then(resp => {
                                 const data = resp.data;
-                                data.features.map(item => {
-                                    vm.$set(item, 'expand', false);
-                                    //if (item.attributes.nationalit == 'For validation')
-                                    //    item.attributes.nationalit = '';
-                                    //if (item.attributes.residence == 'For validation')
-                                    //    item.attributes.residence = '';
-                                    //if (item.attributes.confirmed == 'For validation')
-                                    //    item.attributes.confirmed = '';
-                                    //if (item.attributes.facility == 'For validation')
-                                    //    item.attributes.facility = '';
 
-                                    //item.confirmed = window.moment('calendar');
+                                data.features.forEach(item => {
                                     item.province = vm.getProvince(item.attributes.residence);
+                                    //var address = vm.parseAddress(item.attributes.residence);
+
                                 })
+
                                 items = items.concat(data.features);
 
-                                vm.hasNextRows = data.exceededTransferLimit;
+                                hasNextRows = data.exceededTransferLimit;
                             })
 
-                        resultOffset += resultRecordCount + 1;
-                    } while (loop && vm.hasNextRows);
+                        resultOffset += vm.resultRecordCount;
+
+                    } while (hasNextRows);
 
                     vm.items = items;
                     vm.saveSelectedProvinces();
@@ -431,16 +497,13 @@
                     localStorage.removeItem('selectedProvinces');
                 } finally {
                     vm.busy = false;
-
                 }
             },
+
             async getItem(id) {
                 const vm = this;
-                const loop = true;
-                const resultRecordCount = 200;
+                let hasNextRows = false;
                 let resultOffset = 0;
-                let url1 = `https://services5.arcgis.com/mnYJ21GiFTR97WFg/arcgis/rest/services/PH_masterlist/FeatureServer/0/query?f=json`;
-
                 let items = [];
 
                 if (vm.busy)
@@ -453,37 +516,37 @@
                     do {
                         let where = encodeURIComponent(`FID = ${id}`);
 
-                        let fields = '*';
-                        let url2 = url1 + `&where=${where}&returnGeometry=false&spatialRel=esriSpatialRelIntersects&outFields=${fields}&resultOffset=${resultOffset}&resultRecordCount=${resultRecordCount}`;
+                        const query = [
+                            '&where=', where,
+                            '&outFields=', '*',
+                            '&resultOffset=', resultOffset,
+                            '&resultRecordCount=', vm.resultRecordCount,
+                        ].join('');
 
-                        try {
+                        let url = vm.baseArcgisUrl + query;
 
-                            await instance.get(url2)
-                                .then(resp => {
-                                    const data = resp.data;
-                                    data.features.map(item => {
-                                        const attributes = item.attributes;
-                                        attributes.symptoms = attributes.symptoms.trim();
-                                        attributes.travel_hx = attributes.travel_hx.trim();
+                        await instance.get(url)
+                            .then(resp => {
+                                const data = resp.data;
+                                data.features.map(item => {
+                                    const attributes = item.attributes;
+                                    attributes.symptoms = attributes.symptoms.trim();
+                                    attributes.travel_hx = attributes.travel_hx.trim();
+                                });
 
-                                    });
+                                items = items.concat(data.features);
 
-                                    items = items.concat(data.features);
+                                hasNextRows = data.exceededTransferLimit;
+                            });
 
-                                    vm.hasNextRows = data.exceededTransferLimit;
-                                })
-                        } catch (e) {
-                            alert(e);
-                        }
-                        resultOffset += resultRecordCount + 1;
+                        resultOffset += vm.resultRecordCount;
 
-                    } while (loop && vm.hasNextRows);
-
+                    } while (hasNextRows);
 
                     return items;
 
                 } catch (e) {
-                    alert(e)
+                    alert(e);
                 } finally {
 
                 }
@@ -513,24 +576,27 @@
                 localStorage.setItem('selectedProvinces', JSON.stringify(vm.selectedProvinces));
             },
             async onProviceChanged() {
-                //alert(this.selectedProvince)
                 const vm = this;
 
                 if (vm.selectedProvince)
                     await vm.get();
             },
-
-            getProvince(residence) {
-                //if (residence == 'For validation')
-                //    return residence;
-
+            parseAddress(residence) {
                 let address = residence.split(',');
 
-                if (address.length == 1 || address.length == 2) {
+                if (address.length == 2) {
+                    return address
+                }
+                return ['', residence];
+            },
+            getProvince(residence) {
+                const vm = this;
+
+                let address = vm.parseAddress(residence);
+
+                if (address.length > 0) {
                     var foo = address[address.length - 1].trim();
-                    if (address[0].includes('Davao City')) {
-                        foo = address[0];
-                    }
+
                     return foo;
                 }
                 return residence;
@@ -539,11 +605,8 @@
                 const vm = this;
                 var item = await vm.getItem(info.FID);
 
-
-                vm.selectedItem = null;
                 vm.$bvModal.show('modal');
                 vm.selectedItem = item[0].attributes;
-
             }
 
         }
