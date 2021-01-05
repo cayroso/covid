@@ -27,7 +27,7 @@
     "jquery": "^3.4.1",
     "bootstrap-vue": "^2.8.0",
     "startbootstrap-sb-admin-2": "^4.0.7",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "vue-moment": "^4.1.0",
     "vue-json-pretty": "^1.6.3",
     "nprogress": "^0.2.0",
